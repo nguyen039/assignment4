@@ -37,6 +37,9 @@ class DNSProber:
         Save the response packet to `self.dns_response`.
         :return:
         """
+        self.dns_query = IP(dst=self.resolver)/UDP()/DNS(rd=1,qd=DNSQR(qname=self.domain,qtype=self.query_type))
+        self.dns_response = sr1(self.dns_query)[DNS]
+        return True
 
     def __parse_dns_response(self):
         """
@@ -45,7 +48,9 @@ class DNSProber:
         Save these to the `self.returned_ips` list.
         :return:
         """
-
+        #for i in range(self.dns_response.ancount):
+        self.returned_ips.append((self.dns_response).an.rdata)
+        return True
 
 def main():
     dnsp = DNSProber(resolver='8.8.8.8', domain='toutatis.cs.uiowa.edu', query_type='A')

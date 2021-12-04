@@ -29,25 +29,16 @@ class RouteProber:
 
         :return:
         """
-        # packet = IP(dst=self.dst_ip, ttl=i)/ICMP()
-
         icmp_packets = []
-        for i in range(20):
+        for i in range(1,21):
             icmp_packets.append(IP(dst=self.dst_ip, ttl=i)/ICMP())
 
         for j in icmp_packets:
             ans = sr1(j, timeout=1)
-            if ans is not None:
+            if ans != None:
                 self.path.append(ans[IP].src)
             else:
                 pass
-        
-        # for i in icmp_packets:
-        #     print(i.show())
-        #sr1(j).summary()
-        #sr1(packet).show()
-        #self.path.append(sr1(packet)[IP].src)
-            
         
         return True
 

@@ -60,6 +60,18 @@ class HTTPProber:
 
         :return:
         """
+        # not sure of appropriate sequence number to put into "SYN_flag"
+        SYN_flag = TCP(sport=self.src_port, dport=self.dst_port, flags="S") 
+        SYN_ACK = sr1(IP(dst=self.dst_ip)/SYN_flag)
+        
+        seq_num = SYN_ACK[TCP].seq
+
+        # also not sure of appropriate sequence number for "ACK_packet"
+        ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, ack=seq_num, flags="A")
+        send(IP(dst=self.dst_ip)/ACK_packet)
+        #print(SYN_ACK[TCP].seq)
+
+        return True
 
 
     def __send_get_request(self):
@@ -87,6 +99,7 @@ class HTTPProber:
 
         :return:
         """
+        return True
 
     def __end_connection(self):
         """
@@ -98,6 +111,7 @@ class HTTPProber:
 
         :return:
         """
+        return True
 
 
 def main():

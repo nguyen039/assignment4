@@ -61,13 +61,19 @@ class HTTPProber:
         :return:
         """
         # not sure of appropriate sequence number to put into "SYN_flag"
-        SYN_flag = TCP(sport=self.src_port, dport=self.dst_port, flags="S") 
+        # maybe a random number?
+        SYN_flag = TCP(sport=self.src_port, dport=self.dst_port, seq=1, flags="S") 
         SYN_ACK = sr1(IP(dst=self.dst_ip)/SYN_flag)
         
-        seq_num = SYN_ACK[TCP].seq
+        seq_num =  SYN_ACK[TCP].ack + 1
+        ack_num = SYN_ACK[TCP].seq + 1
+        # print(SYN_ACK[TCP].seq)
+        # print(SYN_ACK[TCP].ack)
 
         # also not sure of appropriate sequence number for "ACK_packet"
-        ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, ack=seq_num, flags="A")
+        ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, seq=seq_num, ack=ack_num, flags="A")
+        # print(ACK_packet[TCP].seq)
+        # print(ACK_packet[TCP].ack)
         send(IP(dst=self.dst_ip)/ACK_packet)
         #print(SYN_ACK[TCP].seq)
 

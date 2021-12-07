@@ -114,9 +114,8 @@ class HTTPProber:
 
 
 
-        #getStr = 'GET / HTTP1.1\r\nHost:' + self.dst_ip + '\r\nAccept-Encoding: text, html \r\nAccept_Language: en-US,en'
         #The HTTP request and reply
-        #sr1(IP(dst=self.dst_ip) / TCP(dport=self.dst_port, sport=SYN_ACK[TCP].dport, seq=SYN_ACK[TCP].ack, ack=SYN_ACK[TCP].seq + 1, flags='A') / getStr)
+        #sr1(IP(dst=self.dst_ip) / TCP(dport=self.dst_port, sport=SYN_ACK[TCP].dport, seq=SYN_ACK[TCP].ack, ack=SYN_ACK[TCP].seq + 1, flags='A') / reqStr)
 
         return True
 

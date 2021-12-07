@@ -106,7 +106,8 @@ class HTTPProber:
         :return:
         """
 
-        reqStr = 'GET / HTTP/1.1\r\nHost: toutatis.cs.uiowa.edu'
+        reqStr = 'GET / HTTP/1.1\r\nHost: {}'.format(self.dst_ip)
+        print(reqStr)
         req = IP(dst=self.dst_ip) / TCP(dport=self.dst_port, sport=self.src_port, 
                     seq=1, flags='A') / reqStr
         
@@ -115,6 +116,9 @@ class HTTPProber:
 
 
         #The HTTP request and reply
+        http_request = HTTPRequest(User_Agent=self.user_agent, Host=self.dst_ip+":"+str(self.dst_port), 
+            Accept="text/html", Accept_Language="en-US,en", Connection="close")
+
         #sr1(IP(dst=self.dst_ip) / TCP(dport=self.dst_port, sport=SYN_ACK[TCP].dport, seq=SYN_ACK[TCP].ack, ack=SYN_ACK[TCP].seq + 1, flags='A') / reqStr)
 
         return True

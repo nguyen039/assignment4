@@ -105,6 +105,13 @@ class HTTPProber:
 
         :return:
         """
+
+        reqStr = 'GET / HTTP/1.1\r\nHost: toutatis.cs.uiowa.edu'
+        req = IP(dst=self.dst_ip) / TCP(dport=self.dst_port, sport=self.src_port, 
+                    seq=1, flags='a') / reqStr
+        
+        reply = sr1(req)
+
         return True
 
     def __end_connection(self):

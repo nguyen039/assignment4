@@ -133,6 +133,7 @@ class HTTPProber:
 
         :return:
         """
+        FIN = TCP(sport=self.src_port, dport=self.dst_port, flags="FA", seq =1)
         return True
 
 

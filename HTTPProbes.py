@@ -60,17 +60,16 @@ class HTTPProber:
 
         :return:
         """
-        # not sure of appropriate sequence number to put into "SYN_flag"
-        # maybe a random number?
+        # seq=1 outputs random number when viewed from print statement
         SYN_flag = TCP(sport=self.src_port, dport=self.dst_port, seq=1, flags="S") 
         SYN_ACK = sr1(IP(dst=self.dst_ip)/SYN_flag)
-        
-        seq_num =  SYN_ACK[TCP].ack + 1
-        ack_num = SYN_ACK[TCP].seq + 1
+
         # print(SYN_ACK[TCP].seq)
         # print(SYN_ACK[TCP].ack)
 
-        # also not sure of appropriate sequence number for "ACK_packet"
+        seq_num =  SYN_ACK[TCP].ack + 1
+        ack_num = SYN_ACK[TCP].seq + 1
+
         ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, seq=seq_num, ack=ack_num, flags="A")
         # print(ACK_packet[TCP].seq)
         # print(ACK_packet[TCP].ack)
@@ -107,26 +106,32 @@ class HTTPProber:
         """
 
         reqStr = 'GET / HTTP/1.1\r\nHost: {}'.format(self.dst_ip)
-        #print(reqStr)
+
+        http_request = HTTPRequest(User_Agent=self.user_agent, Host=self.dst_ip+":"+str(self.dst_port), 
+            Accept="text/html", Accept_Language="en-US,en", Connection="close"   """ Method='Get' """)
+
         req = IP(dst=self.dst_ip) / TCP(dport=self.dst_port, sport=self.src_port, 
-                    seq=1, flags='A') / reqStr
+                    seq=1, flags='A') / reqStr / http_request # HTTP()/http_request
         
-        reply = sr1(req)
+        reply = sr1(req, timeout=1) # timeout handles infinite loop
+
+        # should handle None type that's returned from timeout, but there's no output
+        # some reason http_request might be causing issues
+        if reply != None:
+            print (reply.show())
+        else:
+            pass
 
         #The HTTP request and reply
-        http_request = HTTPRequest(User_Agent=self.user_agent, Host=self.dst_ip+":"+str(self.dst_port), 
-            Accept="text/html", Accept_Language="en-US,en", Connection="close")
-
-
 
         #sends HTTP request and writes result to self.content
-        a = TCP_client.tcplink(HTTP, self.dst_ip, 80)
-        answer = a.sr1(http_request, timeout=5)
-        a.close()
+        # a = TCP_client.tcplink(HTTP, self.dst_ip, 80)
+        # answer = a.sr1(http_request, timeout=1)
+        # a.close()
 
         #not sure what "HTTP content" is to extract
-        for i in reply:
-            self.content.append(i[0])
+        # for i in reply:
+        #     self.content.append(i[0])
         
         #print(self.content)
 
@@ -142,7 +147,8 @@ class HTTPProber:
 
         :return:
         """
-        FIN = TCP(sport=self.src_port, dport=self.dst_port, flags="FA", seq =1)
+        FIN = TCP(sport=self.src_port, dport=self.dst_port, flags="FA", seq=1)
+        send(FIN)
         return True
 
 

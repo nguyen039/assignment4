@@ -104,23 +104,25 @@ class HTTPProber:
 
         :return:
         """
-
-        reqStr = 'GET / HTTP/1.1\r\nHost: {}'.format(self.dst_ip)
+        responses = []
+        # not needed according to TA in office hours: 
+        # reqStr = 'GET / HTTP/1.1\r\nHost: {}'.format(self.dst_ip)
 
         http_request = HTTPRequest(User_Agent=self.user_agent, Host=self.dst_ip+":"+str(self.dst_port), 
-            Accept="text/html", Accept_Language="en-US,en", Connection="close"   """ Method='Get' """)
+            Accept="text/html", Accept_Language="en-US,en", Connection="close", Method="Get")
 
-        req = IP(dst=self.dst_ip) / TCP(dport=self.dst_port, sport=self.src_port, 
-                    seq=1, flags='A') / reqStr / http_request # HTTP()/http_request
-        
-        reply = sr1(req, timeout=1) # timeout handles infinite loop
+        packet = IP(dst=self.dst_ip) / TCP(dport=self.dst_port, sport=self.src_port, 
+                    seq=1, flags='A') / HTTP() / http_request 
 
-        # should handle None type that's returned from timeout, but there's no output
-        # some reason http_request might be causing issues
-        if reply != None:
-            print (reply.show())
-        else:
-            pass
+        get_request = sr(packet, multi=1, timeout=5)
+        # sr1(packet, multi=1, timeout=5) returns Nonetype
+
+        answer, unans = get_request
+        # answer.show()
+        unans.show()
+
+        ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, flags="A") # include seq and ack number
+        response = send(IP(dst=self.dst_ip)/ACK_packet)
 
         #The HTTP request and reply
 

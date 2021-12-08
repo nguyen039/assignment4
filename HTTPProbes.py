@@ -107,19 +107,28 @@ class HTTPProber:
         """
 
         reqStr = 'GET / HTTP/1.1\r\nHost: {}'.format(self.dst_ip)
-        print(reqStr)
+        #print(reqStr)
         req = IP(dst=self.dst_ip) / TCP(dport=self.dst_port, sport=self.src_port, 
                     seq=1, flags='A') / reqStr
         
         reply = sr1(req)
 
-
-
         #The HTTP request and reply
         http_request = HTTPRequest(User_Agent=self.user_agent, Host=self.dst_ip+":"+str(self.dst_port), 
             Accept="text/html", Accept_Language="en-US,en", Connection="close")
 
-        #sr1(IP(dst=self.dst_ip) / TCP(dport=self.dst_port, sport=SYN_ACK[TCP].dport, seq=SYN_ACK[TCP].ack, ack=SYN_ACK[TCP].seq + 1, flags='A') / reqStr)
+
+
+        #sends HTTP request and writes result to self.content
+        a = TCP_client.tcplink(HTTP, self.dst_ip, 80)
+        answer = a.sr1(http_request, timeout=5)
+        a.close()
+
+        #not sure what "HTTP content" is to extract
+        for i in reply:
+            self.content.append(i[0])
+        
+        #print(self.content)
 
         return True
 

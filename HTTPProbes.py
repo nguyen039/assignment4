@@ -119,8 +119,25 @@ class HTTPProber:
 
         answer, unans = get_request
         # answer.show()
-        unans.show()
+        #unans[0][IP].show()
+        #unans[0][TCP].show()
 
+        
+        # unans[0][Padding].show()
+        # unans[IP].payload.show()
+        # unans[TCP].payload.show()
+        #print(unans[TCP])
+
+        for i in unans:
+            i[IP].show()
+            # Prof says that the payload under the "Padding" header is what we need; so, check
+            # for the header and append the payload to self.content if found
+            if Padding not in i:
+                print("No payload found")
+            else:
+                i[Padding].show()
+                self.content.append(i[Padding])
+        
         ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, flags="A") # include seq and ack number
         response = send(IP(dst=self.dst_ip)/ACK_packet)
 
@@ -156,6 +173,8 @@ class HTTPProber:
 
 def main():
     HTTPProber("toutatis.cs.uiowa.edu", 8118, random.choice(range(1024, 2**16-1)), "knock knock")
+    # HTTPProber("toutatis.cs.uiowa.edu", 8118, random.choice(range(1024, 2**16-1)), "knock knock")
+    # HTTPProber("www.google.com", 80, random.choice(range(1024, 2**16-1)), "knock knock")
 
 
 if __name__ == '__main__':

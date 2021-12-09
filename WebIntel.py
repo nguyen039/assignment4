@@ -13,7 +13,6 @@ import DNSProbes
 import HTTPProbes
 import TraceRouteProbes
 import random
-from scapy.all import *
 
 
 class WebIntel:

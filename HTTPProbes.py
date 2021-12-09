@@ -37,6 +37,8 @@ class HTTPProber:
         self.src_port = src_port
         self.user_agent = user_agent
         self.content = []
+        self.seq = 0
+        self.ack = 0
         self.__start_connection()
         self.__send_get_request()
         self.__end_connection()
@@ -67,10 +69,10 @@ class HTTPProber:
         # print(SYN_ACK[TCP].seq)
         # print(SYN_ACK[TCP].ack)
 
-        seq_num =  SYN_ACK[TCP].ack + 1
-        ack_num = SYN_ACK[TCP].seq + 1
+        self.seq =  SYN_ACK[TCP].ack + 1
+        self.ack = SYN_ACK[TCP].seq + 1
 
-        ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, seq=seq_num, ack=ack_num, flags="A")
+        ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, seq=self.seq, ack=self.ack, flags="A")
         # print(ACK_packet[TCP].seq)
         # print(ACK_packet[TCP].ack)
         send(IP(dst=self.dst_ip)/ACK_packet)
@@ -112,7 +114,7 @@ class HTTPProber:
             Accept="text/html", Accept_Language="en-US,en", Connection="close", Method="Get")
 
         packet = IP(dst=self.dst_ip) / TCP(dport=self.dst_port, sport=self.src_port, 
-                    seq=1, flags='A') / HTTP() / http_request 
+                    seq=self.seq, flags='A') / HTTP() / http_request 
 
         get_request = sr(packet, multi=1, timeout=5)
         # sr1(packet, multi=1, timeout=5) returns Nonetype
@@ -138,7 +140,7 @@ class HTTPProber:
                 i[Padding].show()
                 self.content.append(i[Padding])
         
-        ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, flags="A") # include seq and ack number
+        ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, seq=self.seq, ack=self.ack, flags="A") # include seq and ack number
         response = send(IP(dst=self.dst_ip)/ACK_packet)
 
         #The HTTP request and reply

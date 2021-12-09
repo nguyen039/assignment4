@@ -13,6 +13,7 @@ import DNSProbes
 import HTTPProbes
 import TraceRouteProbes
 import random
+from scapy.all import *
 
 
 class WebIntel:
@@ -29,6 +30,18 @@ class WebIntel:
         """
         dns = DNSProbes.DNSProber(resolver="8.8.8.8", domain=self.dst_url, query_type="A")
         self.dns_ips = dns.returned_ips
+
+        #request
+        req = IP(dst="8.8.8.8")/UDP(sport=RandShort(), dport=53)/DNS(rd=1, qd=DNSQR(qname=self.dst_url))
+
+        #response
+        resp = sr1(req, verbose=0)
+        #resp.show()
+        
+
+        
+
+        
 
     def http_probe(self, user_agent):
         """

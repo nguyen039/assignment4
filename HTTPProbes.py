@@ -116,65 +116,19 @@ class HTTPProber:
         packet = IP(dst=self.dst_ip) / TCP(dport=self.dst_port, sport=self.src_port, 
                     seq=self.seq, flags='A') / HTTP() / http_request_str
 
-        get_request = sr1(packet, multi=1, timeout=5)
-        #print(http_request)
+        get_request = sr(packet, multi=1, timeout=5)
+        #get_request.show()
+        answers, unans = get_request
+        # answers.show()
+        for i in answers:
+            #i.show()
+            #print(i[1][Padding].load)
+            self.content.append(i[1][Padding].load)
+            self.seq = i[1][TCP].ack + 1
+            self.ack = i[1][TCP].seq + 1
+            ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, seq=self.seq, ack=self.ack, flags="A") 
+            j = sr1((IP(dst=self.dst_ip)/ACK_packet), timeout=5)
 
-        self.seq = get_request["TCP"].ack + 1
-        self.ack = get_request["TCP"].seq + 1
-        
-        ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, seq=self.seq, ack=self.ack, flags="A") 
-        j = sr1(IP(dst=self.dst_ip)/ACK_packet)
-        j.show()
-        # for i in answer:
-        #     resp = i[1]
-        #     self.seq = resp[TCP].ack + 1
-        #     self.ack = resp[TCP].seq + 1
-        #     ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, seq=self.seq, ack=self.ack, flags="A") 
-        #     response = send(IP(dst=self.dst_ip)/ACK_packet)
-        #     response.show
-        #unans.show()
-
-
-        # sr1(packet, multi=1, timeout=5) returns Nonetype
-
-        # answer.show()
-        #unans[0][IP].show()
-        #unans[0][TCP].show()
-
-        #ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, seq=self.seq, ack=self.ack, flags="A") # include seq and ack number
-        #response = send(IP(dst=self.dst_ip)/ACK_packet)
-        
-        # unans[0][Padding].show()
-        # unans[IP].payload.show()
-        # unans[TCP].payload.show()
-        #print(unans[TCP])
-        #sum = answer.summary()
-        #print(sum)
-
-        #for i in answer:
-        #    print(len(answer))
-        #    #i[IP].show()
-        #    i[0][IP].show()
-        #    i[1][IP].show()
-        #    # Prof says that the payload under the "Padding" header is what we need; so, check
-        #    # for the header and append the payload to self.content if found
-        #    if Padding not in i:
-        #        print("No payload found")
-        #    else:
-        #        i[Padding].show()
-        #        self.content.append(i[Padding])
-
-        #The HTTP request and reply
-
-        #sends HTTP request and writes result to self.content
-        # a = TCP_client.tcplink(HTTP, self.dst_ip, 80)
-        # answer = a.sr1(http_request, timeout=1)
-        # a.close()
-
-        #not sure what "HTTP content" is to extract
-        # for i in reply:
-        #     self.content.append(i[0])
-        
         #print(self.content)
 
         return True

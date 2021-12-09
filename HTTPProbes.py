@@ -66,8 +66,8 @@ class HTTPProber:
         SYN_flag = TCP(sport=self.src_port, dport=self.dst_port, seq=1, flags="S") 
         SYN_ACK = sr1(IP(dst=self.dst_ip)/SYN_flag)
 
-        # print(SYN_ACK[TCP].seq)
-        # print(SYN_ACK[TCP].ack)
+        print(SYN_ACK[TCP].seq)
+        print(SYN_ACK[TCP].ack)
 
         self.seq =  SYN_ACK[TCP].ack + 1
         self.ack = SYN_ACK[TCP].seq + 1
@@ -117,31 +117,47 @@ class HTTPProber:
                     seq=self.seq, flags='A') / HTTP() / http_request 
 
         get_request = sr(packet, multi=1, timeout=5)
-        # sr1(packet, multi=1, timeout=5) returns Nonetype
 
         answer, unans = get_request
+        print(answer.summary())
+
+        for i in answer:
+            resp = i[1]
+            self.seq = resp[TCP].ack + 1
+            self.ack = resp[TCP].seq + 1
+            ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, seq=self.seq, ack=self.ack, flags="A") # include seq and ack number
+            response = send(IP(dst=self.dst_ip)/ACK_packet)
+        unans.show()
+
+
+        # sr1(packet, multi=1, timeout=5) returns Nonetype
+
         # answer.show()
         #unans[0][IP].show()
         #unans[0][TCP].show()
 
+        #ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, seq=self.seq, ack=self.ack, flags="A") # include seq and ack number
+        #response = send(IP(dst=self.dst_ip)/ACK_packet)
         
         # unans[0][Padding].show()
         # unans[IP].payload.show()
         # unans[TCP].payload.show()
         #print(unans[TCP])
+        #sum = answer.summary()
+        #print(sum)
 
-        for i in unans:
-            i[IP].show()
-            # Prof says that the payload under the "Padding" header is what we need; so, check
-            # for the header and append the payload to self.content if found
-            if Padding not in i:
-                print("No payload found")
-            else:
-                i[Padding].show()
-                self.content.append(i[Padding])
-        
-        ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, seq=self.seq, ack=self.ack, flags="A") # include seq and ack number
-        response = send(IP(dst=self.dst_ip)/ACK_packet)
+        #for i in answer:
+        #    print(len(answer))
+        #    #i[IP].show()
+        #    i[0][IP].show()
+        #    i[1][IP].show()
+        #    # Prof says that the payload under the "Padding" header is what we need; so, check
+        #    # for the header and append the payload to self.content if found
+        #    if Padding not in i:
+        #        print("No payload found")
+        #    else:
+        #        i[Padding].show()
+        #        self.content.append(i[Padding])
 
         #The HTTP request and reply
 

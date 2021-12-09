@@ -62,12 +62,11 @@ class HTTPProber:
 
         :return:
         """
-        # seq=1 outputs random number when viewed from print statement
         SYN_flag = TCP(sport=self.src_port, dport=self.dst_port, seq=1, flags="S") 
         SYN_ACK = sr1(IP(dst=self.dst_ip)/SYN_flag)
 
-        print(SYN_ACK[TCP].seq)
-        print(SYN_ACK[TCP].ack)
+        # print(SYN_ACK[TCP].seq)
+        # print(SYN_ACK[TCP].ack)
 
         self.seq =  SYN_ACK[TCP].ack + 1
         self.ack = SYN_ACK[TCP].seq + 1
@@ -75,6 +74,7 @@ class HTTPProber:
         ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, seq=self.seq, ack=self.ack, flags="A")
         # print(ACK_packet[TCP].seq)
         # print(ACK_packet[TCP].ack)
+
         send(IP(dst=self.dst_ip)/ACK_packet)
         #print(SYN_ACK[TCP].seq)
 
@@ -107,27 +107,32 @@ class HTTPProber:
         :return:
         """
         responses = []
-        # not needed according to TA in office hours: 
         # reqStr = 'GET / HTTP/1.1\r\nHost: {}'.format(self.dst_ip)
+        http_request_str = 'Get / HTTP/1.1\r\nAccept: text/html\r\nAccept-Language: en-US,en\r\nConnection: close\r\nHost: {}\r\nUser-Agent: knock knock\r\n\r\n'.format(self.dst_ip)
 
         http_request = HTTPRequest(User_Agent=self.user_agent, Host=self.dst_ip+":"+str(self.dst_port), 
             Accept="text/html", Accept_Language="en-US,en", Connection="close", Method="Get")
 
         packet = IP(dst=self.dst_ip) / TCP(dport=self.dst_port, sport=self.src_port, 
-                    seq=self.seq, flags='A') / HTTP() / http_request 
+                    seq=self.seq, flags='A') / HTTP() / http_request_str
 
-        get_request = sr(packet, multi=1, timeout=5)
+        get_request = sr1(packet, multi=1, timeout=5)
+        #print(http_request)
 
-        answer, unans = get_request
-        print(answer.summary())
-
-        for i in answer:
-            resp = i[1]
-            self.seq = resp[TCP].ack + 1
-            self.ack = resp[TCP].seq + 1
-            ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, seq=self.seq, ack=self.ack, flags="A") # include seq and ack number
-            response = send(IP(dst=self.dst_ip)/ACK_packet)
-        unans.show()
+        self.seq = get_request["TCP"].ack + 1
+        self.ack = get_request["TCP"].seq + 1
+        
+        ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, seq=self.seq, ack=self.ack, flags="A") 
+        j = sr1(IP(dst=self.dst_ip)/ACK_packet)
+        j.show()
+        # for i in answer:
+        #     resp = i[1]
+        #     self.seq = resp[TCP].ack + 1
+        #     self.ack = resp[TCP].seq + 1
+        #     ACK_packet = TCP(sport=self.src_port, dport=self.dst_port, seq=self.seq, ack=self.ack, flags="A") 
+        #     response = send(IP(dst=self.dst_ip)/ACK_packet)
+        #     response.show
+        #unans.show()
 
 
         # sr1(packet, multi=1, timeout=5) returns Nonetype
